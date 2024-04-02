@@ -25,21 +25,22 @@ func (s *store) CreateTestStore() {
 }
 
 func WriteToFile(data [][]string) {
-	file, err := os.OpenFile("store.csv", os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile("store.csv", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
 		fmt.Println("Error opening store file")
 	}
 	defer file.Close()
-
+	file.WriteString("")
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
+	writer.WriteAll(data)
 
-	for _, record := range data {
-		err := writer.Write(record)
-		if err != nil {
-			fmt.Println("Error writing to store file")
-		}
-	}
+	// for _, record := range data {
+	// 	err := writer.Write(record)
+	// 	if err != nil {
+	// 		fmt.Println("Error writing to store file")
+	// 	}
+	// }
 	fmt.Println("Store Updated")
 }
 

@@ -15,10 +15,10 @@ func main() {
 	// - [] Extract flags from args
 	// - [] Add help command
 	// - [x] Add list command
-	// - [] Add create command
+	// - [x] Add create command
 	// - [] Add update command
-	// - [] Add delete command
-	// - [] Add some sort of data store. Probably just going to use a static CSV file for now.
+	// - [x] Add delete command
+	// - [x] Add some sort of data store. Probably just going to use a static CSV file for now.
 
 	// Add CRUD endpoints for todo list items
 	store, err := GetStore()
@@ -43,5 +43,11 @@ func main() {
 			return
 		}
 		store.CreateItem(args[1])
+	case "delete-item":
+		if len(args) < 2 {
+			fmt.Println("Please provide a name for the item to delete")
+			return
+		}
+		store.DeleteItem(args[1])
 	}
 }

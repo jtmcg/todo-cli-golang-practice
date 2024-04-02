@@ -38,3 +38,14 @@ func (s *store) convertItemsToRecords() [][]string {
 	}
 	return records
 }
+
+func (s *store) DeleteItem(name string) {
+	for i, item := range s.items {
+		if item.name == name {
+			s.items = append(s.items[:i], s.items[i+1:]...)
+			s.WriteStore()
+			return
+		}
+	}
+	fmt.Println("Item not found")
+}
