@@ -37,5 +37,11 @@ func main() {
 		store.ListItems()
 	case "create-test-store":
 		store.CreateTestStore()
+	case "create-item":
+		if len(args) < 2 {
+			fmt.Println("Please provide a name for the item")
+			return
+		}
+		store.CreateItem(args[1])
 	}
 }
