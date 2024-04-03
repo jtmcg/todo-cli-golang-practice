@@ -52,7 +52,8 @@ func GetStore() (*store, error) {
 
 	items := []item{}
 	for _, record := range records {
-		items = append(items, item{id: record[0], createdAt: record[1], lastUpdated: record[2], name: record[3], status: ToStatus(record[4]), description: record[5]})
+		status, _ := StringToStatus(record[4])
+		items = append(items, item{id: record[0], createdAt: record[1], lastUpdated: record[2], name: record[3], status: status, description: record[5]})
 	}
 
 	return &store{items: items}, nil

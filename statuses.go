@@ -1,5 +1,7 @@
 package main
 
+import "errors"
+
 type Status string
 
 const (
@@ -11,21 +13,22 @@ const (
 	Archived   Status = "archived"
 )
 
-func ToStatus(status string) Status {
+func StringToStatus(status string) (Status, error) {
 	switch status {
 	case "backlog":
-		return Backlog
+		return Backlog, nil
 	case "planned":
-		return Planned
+		return Planned, nil
 	case "in-progress":
-		return InProgress
+		return InProgress, nil
 	case "in-review":
-		return InReview
+		return InReview, nil
 	case "done":
-		return Done
+		return Done, nil
 	case "archived":
-		return Archived
+		return Archived, nil
 	default:
-		return Backlog
+		err := errors.New("Invalid status: " + status)
+		return "", err
 	}
 }

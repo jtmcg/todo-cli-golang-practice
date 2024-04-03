@@ -37,7 +37,7 @@ type store struct {
 func (s *store) CreateTestStore() {
 	DeleteStore()
 	for i := 0; i < 10; i++ {
-		s.CreateItem(fmt.Sprintf("item-%d", i), fmt.Sprintf("description-%d", i))
+		s.CreateItem(fmt.Sprintf("item-%d", i), fmt.Sprintf("description-%d", i), "")
 	}
 }
 
@@ -45,32 +45,51 @@ func (s *store) WriteStore() {
 	WriteToFile(s.convertItemsToRecords())
 }
 
-func (s *store) ListItems() {
+func (s *store) ListItems(showArchived bool) {
 	fmt.Println("Id                                   | Created At              | Last Updated            | Name | Status | Description")
 	for _, item := range s.items {
-		fmt.Println(item)
-	}
-}
-
-func (s *store) GetItemByName(name string) {
-	for _, item := range s.items {
-		if item.name == name {
+		if item.status != Archived || showArchived {
 			fmt.Println(item)
-			return
 		}
 	}
-	fmt.Println("Item not found")
 }
 
-func (s *store) CreateItem(name string, description string) {
+func (s *store) GetItemByName(name string) (item, error) {
+	for _, item := range s.items {
+		if item.name == name {
+			return item, nil
+		}
+	}
+	return item{}, fmt.Errorf("Item not found")
+}
+
+func (s *store) GetItemById(id string) (item, error) {
+	for _, item := range s.items {
+		if item.id == id {
+			return item, nil
+		}
+	}
+	return item{}, fmt.Errorf("Item not found")
+}
+
+func (s *store) CreateItem(name string, description string, status string) {
+	// Currently not forcing uniqueness on names... This is going to be a problem
+	// but I'll punt it for now
 	now := GetCurrentTimeString()
-	fmt.Println(now)
+	if status == "" {
+		status = "backlog"
+	}
+	typedStatus, err := StringToStatus(status)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	item := &item{
 		id:          Guid(),
 		createdAt:   now,
 		lastUpdated: now,
 		name:        name,
-		status:      Backlog,
+		status:      typedStatus,
 		description: description,
 	}
 	s.items = append(s.items, *item)
@@ -78,10 +97,9 @@ func (s *store) CreateItem(name string, description string) {
 	s.WriteStore()
 }
 
-func (s *store) ProgressItem(name string) {
-	// This isn't working yet
+func (s *store) ProgressItem(id string, name string) {
 	for i, item := range s.items {
-		if item.name == name {
+		if item.name == name && name != "" || item.id == id && id != "" {
 			s.items[i].ProgressStatus()
 			s.items[i].lastUpdated = GetCurrentTimeString()
 			s.WriteStore()
@@ -101,9 +119,9 @@ func (s *store) convertItemsToRecords() [][]string {
 	return records
 }
 
-func (s *store) DeleteItem(name string) {
+func (s *store) DeleteItem(name string, id string) {
 	for i, item := range s.items {
-		if item.name == name {
+		if item.name == name && name != "" || item.id == id && id != "" {
 			s.items = append(s.items[:i], s.items[i+1:]...)
 			s.WriteStore()
 			return
@@ -112,19 +130,28 @@ func (s *store) DeleteItem(name string) {
 	fmt.Println("Item not found")
 }
 
-func (s *store) UpdateItem(name string, field string, value string) {
+func (s *store) UpdateItem(id string, name string, description string, status string, allowEmpty bool) {
+	var itemToUpdate item
+	if id == "" {
+		itemToUpdate, _ = s.GetItemByName(name)
+	} else {
+		itemToUpdate, _ = s.GetItemById(id)
+	}
 	for i, item := range s.items {
-		if item.name == name {
-			switch field {
-			case "name":
-				s.items[i].name = value
-			case "status":
-				s.items[i].status = ToStatus(value)
-			case "description":
-				s.items[i].description = value
-			default:
-				fmt.Println("Field not found or not updateable")
-				return
+		if item.id == itemToUpdate.id {
+			if name != "" || allowEmpty {
+				s.items[i].name = name
+			}
+			if description != "" || allowEmpty {
+				s.items[i].description = description
+			}
+			if status != "" {
+				status, err := StringToStatus(status)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				s.items[i].status = status
 			}
 			s.items[i].lastUpdated = GetCurrentTimeString()
 			s.WriteStore()
