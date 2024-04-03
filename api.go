@@ -15,13 +15,13 @@ func CreateStore() {
 	fmt.Println("Store Created")
 }
 
-func (s *store) CreateTestStore() {
-	items := []item{
-		{id: Guid(), name: "item1"},
-		{id: Guid(), name: "item2"},
+func DeleteStore() {
+	file, err := os.OpenFile("store.csv", os.O_TRUNC, 0666)
+	if err != nil {
+		fmt.Println("Error deleting store file")
 	}
-	s.items = items
-	WriteToFile(s.convertItemsToRecords())
+	defer file.Close()
+	file.Truncate(0)
 }
 
 func WriteToFile(data [][]string) {
@@ -30,18 +30,10 @@ func WriteToFile(data [][]string) {
 		fmt.Println("Error opening store file")
 	}
 	defer file.Close()
-	file.WriteString("")
+	file.Truncate(0)
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 	writer.WriteAll(data)
-
-	// for _, record := range data {
-	// 	err := writer.Write(record)
-	// 	if err != nil {
-	// 		fmt.Println("Error writing to store file")
-	// 	}
-	// }
-	fmt.Println("Store Updated")
 }
 
 func GetStore() (*store, error) {
@@ -60,7 +52,7 @@ func GetStore() (*store, error) {
 
 	items := []item{}
 	for _, record := range records {
-		items = append(items, item{id: record[0], name: record[1]})
+		items = append(items, item{id: record[0], createdAt: record[1], lastUpdated: record[2], name: record[3], status: ToStatus(record[4]), description: record[5]})
 	}
 
 	return &store{items: items}, nil
