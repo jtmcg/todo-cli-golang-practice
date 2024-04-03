@@ -81,7 +81,7 @@ func main() {
 	case Help:
 		var cmds []Command
 		if len(args) == 1 {
-			cmds = []Command{List, Create, Delete, Update, Progress, Archive, ChangeStatus}
+			cmds = []Command{Help, List, CreateTestStore, Create, Delete, Update, Progress, Archive, ChangeStatus}
 		} else {
 			for _, arg := range args[1:] {
 				cmd, err := StringToCommand(arg)
