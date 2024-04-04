@@ -10,7 +10,7 @@ import (
 func CreateStore() {
 	file, err := os.Create("store.csv")
 	if err != nil {
-		log.Fatal("Error creating store file")
+		log.Fatal("Error creating store file: %v", err)
 	}
 	file.Close()
 	fmt.Println("Store Created")
@@ -19,7 +19,7 @@ func CreateStore() {
 func DeleteStore() {
 	file, err := os.OpenFile("store.csv", os.O_TRUNC, 0666)
 	if err != nil {
-		log.Fatal("Error deleting store file")
+		log.Fatalf("Error deleting store file: %v", err)
 	}
 	defer file.Close()
 	file.Truncate(0)
@@ -28,7 +28,7 @@ func DeleteStore() {
 func WriteToFile(data [][]string) {
 	file, err := os.OpenFile("store.csv", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
-		log.Fatal("Error opening store file")
+		log.Fatalf("Error opening store file: %v", err)
 	}
 	defer file.Close()
 	file.Truncate(0)
