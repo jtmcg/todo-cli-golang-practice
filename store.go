@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 )
 
 type item struct {
@@ -73,7 +72,7 @@ func (s *store) GetItemById(id string) (item, error) {
 	return item{}, fmt.Errorf("Item not found")
 }
 
-func (s *store) CreateItem(name string, description string, status string) {
+func (s *store) CreateItem(name string, description string, status string) error {
 	// Currently not forcing uniqueness on names... This is going to be a problem
 	// but I'll punt it for now
 	now := GetCurrentTimeString()
@@ -82,7 +81,7 @@ func (s *store) CreateItem(name string, description string, status string) {
 	}
 	typedStatus, err := StringToStatus(status)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	item := &item{
 		id:          Guid(),
@@ -93,20 +92,20 @@ func (s *store) CreateItem(name string, description string, status string) {
 		description: description,
 	}
 	s.items = append(s.items, *item)
-	fmt.Println(s.items)
 	s.WriteStore()
+	return nil
 }
 
-func (s *store) ProgressItem(id string, name string) {
+func (s *store) ProgressItem(id string, name string) error {
 	for i, item := range s.items {
 		if item.name == name && name != "" || item.id == id && id != "" {
 			s.items[i].ProgressStatus()
 			s.items[i].lastUpdated = GetCurrentTimeString()
 			s.WriteStore()
-			return
+			return nil
 		}
 	}
-	fmt.Println("Item not found")
+	return fmt.Errorf("Item not found")
 }
 
 func (s *store) convertItemsToRecords() [][]string {
@@ -119,18 +118,18 @@ func (s *store) convertItemsToRecords() [][]string {
 	return records
 }
 
-func (s *store) DeleteItem(name string, id string) {
+func (s *store) DeleteItem(name string, id string) error {
 	for i, item := range s.items {
 		if item.name == name && name != "" || item.id == id && id != "" {
 			s.items = append(s.items[:i], s.items[i+1:]...)
 			s.WriteStore()
-			return
+			return nil
 		}
 	}
-	fmt.Println("Item not found")
+	return fmt.Errorf("Item not found")
 }
 
-func (s *store) UpdateItem(id string, name string, description string, status string, allowEmpty bool) {
+func (s *store) UpdateItem(id string, name string, description string, status string, allowEmpty bool) error {
 	var itemToUpdate item
 	if id == "" {
 		itemToUpdate, _ = s.GetItemByName(name)
@@ -148,14 +147,14 @@ func (s *store) UpdateItem(id string, name string, description string, status st
 			if status != "" {
 				status, err := StringToStatus(status)
 				if err != nil {
-					log.Fatal(err)
+					return err
 				}
 				s.items[i].status = status
 			}
 			s.items[i].lastUpdated = GetCurrentTimeString()
 			s.WriteStore()
-			return
+			return nil
 		}
 	}
-	fmt.Println("Item not found")
+	return fmt.Errorf("Item not found")
 }

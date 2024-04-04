@@ -121,7 +121,10 @@ func main() {
 		if name == "" {
 			log.Fatal("Please provide a name for the item to create")
 		}
-		store.CreateItem(name, description, status)
+		err := store.CreateItem(name, description, status)
+		if err != nil {
+			log.Fatal(err)
+		}
 	case Delete:
 		if name == "" && id == "" {
 			log.Fatal("Please provide a name or id for the item to delete")
@@ -131,12 +134,18 @@ func main() {
 		if name == "" && id == "" {
 			log.Fatal("Please provide a name or id for the item to update. If you'd like to update the name, you must provide the id.")
 		}
-		store.UpdateItem(id, name, description, status, allowEmpty)
+		err := store.UpdateItem(id, name, description, status, allowEmpty)
+		if err != nil {
+			log.Fatal(err)
+		}
 	case Progress:
 		if name == "" && id == "" {
 			log.Fatal("Please provide a name or id for the item to progress")
 		}
-		store.ProgressItem(id, name)
+		err := store.ProgressItem(id, name)
+		if err != nil {
+			log.Fatal(err)
+		}
 	case Archive:
 		store.UpdateItem(id, name, "", "archived", false)
 	case ChangeStatus:
