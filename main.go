@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 )
 
 func main() {
@@ -67,15 +68,13 @@ func main() {
 			CreateStore()
 			store, err = GetStore()
 		} else {
-			fmt.Println(err)
-			return
+			log.Fatal(err)
 		}
 	}
 
 	cmd, err := StringToCommand(args[0])
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 	switch cmd {
 	case Help:
@@ -86,8 +85,7 @@ func main() {
 			for _, arg := range args[1:] {
 				cmd, err := StringToCommand(arg)
 				if err != nil {
-					fmt.Println(err)
-					return
+					log.Fatal(err)
 				}
 				cmds = append(cmds, cmd)
 			}
@@ -97,49 +95,46 @@ func main() {
 			fmt.Println(GetUsage(cmd))
 		}
 	case List:
-		if name != "" {
+		switch {
+		case name != "":
 			item, err := store.GetItemByName(name)
 			if err != nil {
-				fmt.Println(err)
+				log.Fatal(err)
 			} else {
 				fmt.Println(item)
 			}
-		} else if id != "" {
+		case id != "":
 			item, err := store.GetItemById(id)
 			if err != nil {
-				fmt.Println(err)
+				log.Fatal(err)
 			} else {
 				fmt.Println(item)
 			}
-		} else if all || len(args) == 1 {
+		case all || len(args) == 1:
 			store.ListItems(showArchived)
-		} else {
-			fmt.Println("Too many arguments for list command")
+		default:
+			log.Fatal("Too many arguments for list command")
 		}
 	case CreateTestStore:
 		store.CreateTestStore()
 	case Create:
 		if name == "" {
-			fmt.Println("Please provide a name for the item to create")
-			return
+			log.Fatal("Please provide a name for the item to create")
 		}
 		store.CreateItem(name, description, status)
 	case Delete:
 		if name == "" && id == "" {
-			fmt.Println("Please provide a name or id for the item to delete")
-			return
+			log.Fatal("Please provide a name or id for the item to delete")
 		}
 		store.DeleteItem(name, id)
 	case Update:
 		if name == "" && id == "" {
-			fmt.Println("Please provide a name or id for the item to update. If you'd like to update the name, you must provide the id.")
-			return
+			log.Fatal("Please provide a name or id for the item to update. If you'd like to update the name, you must provide the id.")
 		}
 		store.UpdateItem(id, name, description, status, allowEmpty)
 	case Progress:
 		if name == "" && id == "" {
-			fmt.Println("Please provide a name or id for the item to progress")
-			return
+			log.Fatal("Please provide a name or id for the item to progress")
 		}
 		store.ProgressItem(id, name)
 	case Archive:
@@ -147,6 +142,6 @@ func main() {
 	case ChangeStatus:
 		store.UpdateItem(id, name, "", status, false)
 	default:
-		fmt.Println("Invalid command: " + args[0] + ". Use 'help' to see available commands.")
+		log.Fatal("Invalid command: " + args[0] + ". Use 'help' to see available commands.")
 	}
 }

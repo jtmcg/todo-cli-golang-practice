@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 )
 
 type item struct {
@@ -81,8 +82,7 @@ func (s *store) CreateItem(name string, description string, status string) {
 	}
 	typedStatus, err := StringToStatus(status)
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 	item := &item{
 		id:          Guid(),
@@ -148,8 +148,7 @@ func (s *store) UpdateItem(id string, name string, description string, status st
 			if status != "" {
 				status, err := StringToStatus(status)
 				if err != nil {
-					fmt.Println(err)
-					return
+					log.Fatal(err)
 				}
 				s.items[i].status = status
 			}
